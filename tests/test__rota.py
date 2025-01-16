@@ -1,33 +1,49 @@
 """
 Test the ``rota_queue.rota_queue`` module.
 """
+
 import pytest
 
 from rota_queue import rota_queue
 
 
+@pytest.fixture
+def test_user() -> rota_queue.User:
+    rota_queue.DB.connect(reuse_if_open=True)
+    rota_queue.DB.create_tables([rota_queue.User])
+    user = rota_queue.User(name="Wade Wilson")
+    user.save()
+    yield user
+    rota_queue.DB.drop_tables([rota_queue.User])
+
+
+@pytest.fixture
+def another_test_user() -> rota_queue.User:
+    rota_queue.DB.connect(reuse_if_open=True)
+    rota_queue.DB.create_tables([rota_queue.User])
+    user = rota_queue.User(name="WADE WILSON")
+    user.save()
+    yield user
+    rota_queue.DB.drop_tables([rota_queue.User])
+
+
 ###
 # User tests
 ###
-def test__user__init():
-    user = rota_queue.User("Wade Wilson")
-
-    assert user.name == "Wade Wilson"
+def test__user__init(test_user: rota_queue.User):
+    assert test_user.name == "Wade Wilson"
 
 
-def test__user__str():
-    user = rota_queue.User("Wade Wilson")
-
-    assert str(user) == "Wade Wilson"
-    assert repr(user) == "User(name='Wade Wilson')"
+def test__user__str(test_user: rota_queue.User):
+    assert str(test_user) == "Wade Wilson"
+    assert repr(test_user) == "<User: Wade Wilson>"
 
 
-def test__user__eq():
-    user_1 = rota_queue.User("Wade Wilson")
-    user_2 = rota_queue.User("WADE WILSON")
-    user_3 = rota_queue.User("wade wilson")
-
-    assert user_1 == user_2 == user_3
+def test__user__eq(
+    test_user: rota_queue.User,
+    another_test_user: rota_queue.User,
+):
+    assert test_user != another_test_user
 
 
 ###
